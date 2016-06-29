@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <title>node-chat</title>
+ <link href="css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/cover.css" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+<script src="jquery.js"></script>
+  <!-- Begin emoji-picker Stylesheets -->
+  <link href="lib/css/nanoscroller.css" rel="stylesheet">
+  <link href="lib/css/emoji.css" rel="stylesheet">
+  <!-- End emoji-picker Stylesheets -->
+  <style type = "text/css">
+			#wrapper{
+				width: 800px;
+				margin-left: auto;
+				margin-right: auto;
+				color: #999;
+				background: #FFF;
+				border-radius: 5px;
+				padding: 40px;
+				padding-bottom: 0px;
+			}
+			#page_title{
+				margin-top: 0px;
+				margin-bottom: 0px;
+				font-family: Rockwell;
+				font-size: 45px;
+			}
+			#page_slogan{
+				font-family: Rockwell;
+				font-size: 20px;
+			}
+			#page_slogan a{
+				color: #333;
+				text-decoration: none;
+				transition: color 0.5s;
+				-o-transition: color 0.5s;
+				-webkit-transition: color 0.5s;
+				-moz-transition: color 0.5s;
+			}
+			#page_slogan a:hover{
+				color: #999;
+			}
+			#user{
+				margin-top: 50px;
+				text-align: center;
+			}
+			#user_input{
+				font-family: Rockwell;
+				font-weight: bold;
+				font-size: 25px;
+				color: #BBB;
+			}
+			#chat{	
+				margin-top: 200px;
+			}
+			.page_text{
+				font-size: 20px;
+				font-family: Rockwell;
+				text-align: center;
+			}
+			#chat_input{
+				display: none;
+				
+				
+			}
+			.chat_text{
+				text-align: left;
+				font-family: Rockwell;
+				font-size: 20px;
+				color: #999;
+			}
+			#messages{
+				display: none;
+			}
+			#header{
+				z-index: 10;
+				position: fixed;
+				top: 0px;
+				padding: 0px;
+				background: rgba(255,255,255,0.8);
+				width: 760px;
+			}
+			.mini_text{
+				text-align: left;
+				font-size: 14px;
+				font-family: Rockwell;
+			}
+			#log_in_status{
+				display: none;
+			}
+			.inputhideshow
+			{
+			display: none;
+			}
+			.inputemoji
+			{
+			display: none;
+			}
+		</style>
+</head>
+
+<body>
+  <div class="site-wrapper">
+
+    <div class="site-wrapper-inner">
+      <div class="cover-container">
+
+        <div class="inner cover">
+          <h1 class="cover-heading">node-chat</h1>
+
+         
+          <div id = "messages"></div>
+          <p class="lead emoji-picker-container">
+           <input type="text" class="form-control" id="user_input" placeholder="Input field" />
+          </p>
+
+          <p class="lead emoji-picker-container">
+            <input class="form-control" type="hidden" id="hiddeninput" data-emojiable="true" />
+          </p>
+
+  <p class = "mini_text" id = "log_in_status"></p>
+          
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+<script>
+			if(!WebSocket){
+				$('#user').add('p').addClass('page_text').text('Your browser does not support WebSocket, you cannot chat!');
+			}
+			var Socket;
+			var username;
+			
+			$('#user_input').keypress(function(e){
+				var code = (e.keyCode ? e.keyCode : e.which);
+				if(code == 13){
+					var val = $("#user_input").val();
+                     $("#user_input").val('');
+					username = val;
+					console.log(username);
+					//login routine
+					$('#user_input').remove();
+					chat_url = window.location.href;
+					chat_url = chat_url.substr(4);
+					chat_url = 'ws' + chat_url; //Configured the chat URL
+					Socket = new WebSocket(chat_url, 'chat-protocol'); //opened chat socket
+					
+					Socket.addEventListener('open', function(event){
+					
+						$('#chat_input').show();
+						$('.emoji-picker-icon').show();
+						$('#messages').show();
+						$('#messages').append('<p class = "chat_text">You are logged in! Now introduce yourself!</p>')
+						$('#chat_input').focus();
+						$('#log_in_status').text("Logged in as " + username).show();
+					});
+					
+					Socket.addEventListener('message', function(event){
+							var object = eval('('+event.data+')');
+							var sender = object['sender'];
+							var message = object['message'];
+							var appendable = '<p class = "chat_text">' + sender + ' -- ' + message + '</p>';
+							$('#messages').append(appendable);
+							window.scrollBy(0,200);
+					});
+					
+					Socket.addEventListener('error', function(event){
+					console.log("error");
+						return ;
+					});
+				}					
+			});
+			var x= $('#chat_input');
+			console.log(x);
+			
+
+			$(document).delegate('#chat_input', 'keypress', function(e)
+				{  
+					var code = (e.keyCode ? e.keyCode : e.which);
+					console.log(code);
+				console.log("hello");
+				if (code == 13){
+				e.preventDefault();
+					message = $('#chat_input').html();
+					$('#chat_input').html('');
+					console.log(message);
+					sender = username;
+					console.log(sender);
+					json_data = JSON.stringify({'message':message, 'sender':sender});
+					Socket.send(json_data);
+				}
+				});
+					</script>
+  <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+
+  <!-- Begin emoji-picker JavaScript -->
+  <script src="lib/js/nanoscroller.min.js"></script>
+  <script src="lib/js/tether.min.js"></script>
+  <script src="lib/js/config.js"></script>
+  <script src="lib/js/util.js"></script>
+  <script src="lib/js/jquery.emojiarea.js"></script>
+  <script src="lib/js/emoji-picker.js"></script>
+  <!-- End emoji-picker JavaScript -->
+
+  <script>
+    $(function() {
+      // Initializes and creates emoji set from sprite sheet
+      window.emojiPicker = new EmojiPicker({
+        emojiable_selector: '[data-emojiable=true]',
+        assetsPath: 'lib/img',
+        popupButtonClasses: 'fa fa-smile-o'
+      });
+      // Finds all elements with `emojiable_selector` and converts them to rich emoji input fields
+      // You may want to delay this step if you have dynamically created input fields that appear later in the loading process
+      // It can be called as many times as necessary; previously converted input fields will not be converted again
+      window.emojiPicker.discover();
+    });
+  </script>
+
+</body>
+</html>
