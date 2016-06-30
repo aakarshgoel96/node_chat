@@ -1,6 +1,9 @@
 {
   "name": "node_chat",
   "description": "A self contained node chat server",
+  "scripts": {
+    "start": "node index.js"
+  },
   "dependencies": {
     "node-fs": "*",
     "websocket": "*"
