@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 var http = require('http');
 var fs = require('fs');
+var path = require('path');
 var websocket = require('websocket');
+var mime = require('mime');
 clients = [];
 users = [];
 
@@ -249,7 +251,7 @@ var server = http.createServer(function(request, response) {
 	
 });
 
-server.listen(8080, function() {
+server.listen((process.env.PORT || 3000), function() {
     console.log((new Date()) + ' Server is listening on port 8080');
 });
 
